@@ -1,0 +1,32 @@
+name: Build AuthUX
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore AuthUX.sln
+
+      - name: Build Release.NI ARM64 (Windows 11 22H2)
+        run: |
+          msbuild AuthUX.sln /p:Configuration=Release.NI /p:Platform=ARM64 /m
+
+      - name: Upload AuthUX.dll
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuthUX-dll-ARM64
+          path: ARM64\Release.NI\AuthUX.dll
